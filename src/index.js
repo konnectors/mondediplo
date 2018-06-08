@@ -32,7 +32,7 @@ async function start(fields) {
 
   log('info', 'Saving data to Cozy')
   await saveBills(documents, fields.folderPath, {
-    identifiers: ['books']
+    identifiers: ['monde-diplomatique']
   })
 }
 

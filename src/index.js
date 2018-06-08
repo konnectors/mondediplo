@@ -67,7 +67,7 @@ function parseDocuments($) {
       amount: {
         sel: 'td:nth-child(4)',
         fn: extractText,
-        parse: text => /(\d+,\d+)/g.exec(text)[0]
+        parse: text => parseFloat(/(\d+,\d+)/g.exec(text)[0])
       },
       numero: {
         sel: 'td:nth-child(3)',

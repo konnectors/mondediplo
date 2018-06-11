@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "name": "Connector Le Monde Diplomatique",
+  "version": "1.0.1",
+  "name": "Le Monde Diplomatique",
   "type": "konnector",
   "language": "node",
   "icon": "icon.jpg",
@@ -50,7 +50,7 @@
   "locales": {
     "fr": {
       "short_description": "Connecteur Monde Diplomatique",
-      "long_description": "Ce connecteur récupère une liste de factures sur un site de https://www.monde-diplomatique.fr/",
+      "long_description": "Ce connecteur récupère une liste de factures sur le site de https://www.monde-diplomatique.fr/",
       "permissions": {
         "bank operations": {
           "description": "Utilisé pour relier les factures à des operations bancaires"
@@ -68,7 +68,7 @@
     },
     "en": {
       "short_description": "Connector Monde Diplomatique",
-      "long_description": "This connector fetches a list of invoices from a https://www.monde-diplomatique.fr/",
+      "long_description": "This connector fetches a list of invoices from https://www.monde-diplomatique.fr/",
       "permissions": {
         "bank operations": {
           "description": "Required to link bank operations to bills"

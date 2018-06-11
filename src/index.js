@@ -4,65 +4,47 @@ const {
   signin,
   scrape,
   saveBills,
-  log
+  log,
+  htmlToPDF,
+  createCozyPDFDocument
 } = require('cozy-konnector-libs')
+const moment = require('moment')
+moment.locale('fr')
 const request = requestFactory({
-  // the debug mode shows all the details about http request and responses. Very usefull for
-  // debugging but very verbose. That is why it is commented out by default
-  // debug: true,
-  // activates [cheerio](https://cheerio.js.org/) parsing on each page
   cheerio: true,
-  // If cheerio is activated do not forget to deactivate json parsing (which is activated by
-  // default in cozy-konnector-libs
   json: false,
-  // this allows request-promise to keep cookies between requests
   jar: true
 })
 
-const baseUrl = 'http://books.toscrape.com'
+const baseUrl = 'https://boutique.monde-diplomatique.fr'
+const invoicesURL = `${baseUrl}/sales/order/history/`
 
 module.exports = new BaseKonnector(start)
 
-// The start function is run by the BaseKonnector instance only when it got all the account
-// information (fields). When you run this connector yourself in "standalone" mode or "dev" mode,
-// the account information come from ./konnector-dev-config.json file
 async function start(fields) {
-  log('info', 'Authenticating ...')
+  log('info', 'Authenticating…')
   await authenticate(fields.login, fields.password)
   log('info', 'Successfully logged in')
-  // The BaseKonnector instance expects a Promise as return of the function
   log('info', 'Fetching the list of documents')
-  const $ = await request(`${baseUrl}/index.html`)
-  // cheerio (https://cheerio.js.org/) uses the same api as jQuery (http://jquery.com/)
+  const $ = await request(invoicesURL)
   log('info', 'Parsing list of documents')
   const documents = await parseDocuments($)
 
-  // here we use the saveBills function even if what we fetch are not bills, but this is the most
-  // common case in connectors
   log('info', 'Saving data to Cozy')
   await saveBills(documents, fields.folderPath, {
-    // this is a bank identifier which will be used to link bills to bank operations. These
-    // identifiers should be at least a word found in the title of a bank operation related to this
-    // bill. It is not case sensitive.
-    identifiers: ['books']
+    identifiers: ['monde-diplomatique']
   })
 }
 
-// this shows authentication using the [signin function](https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#module_signin)
-// even if this in another domain here, but it works as an example
-function authenticate(username, password) {
+function authenticate(email, mot_de_passe) {
   return signin({
-    url: `http://quotes.toscrape.com/login`,
-    formSelector: 'form',
-    formData: { username, password },
-    // the validate function will check if
+    url: `https://www.monde-diplomatique.fr/sso/connexion/?retour=https%3A%2F%2Fboutique.monde-diplomatique.fr%2Fcustomer%2Faccount`,
+    formSelector: 'form#identification_sso',
+    formData: { email, mot_de_passe },
     validate: (statusCode, $) => {
-      // The login in toscrape.com always works excepted when no password is set
-      if ($(`a[href='/logout']`).length === 1) {
+      if ($('#session_deconnexion').length === 1) {
         return true
       } else {
-        // cozy-konnector-libs has its own logging function which format these logs with colors in
-        // standalone and dev mode and as JSON in production mode
         log('error', $('.error').text())
         return false
       }
@@ -70,58 +52,77 @@ function authenticate(username, password) {
   })
 }
 
-// The goal of this function is to parse a html page wrapped by a cheerio instance
-// and return an array of js objects which will be saved to the cozy by saveBills (https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#savebills)
 function parseDocuments($) {
-  // you can find documentation about the scrape function here :
-  // https://github.com/konnectors/libs/blob/master/packages/cozy-konnector-libs/docs/api.md#scrape
   const docs = scrape(
     $,
     {
+      date: {
+        sel: 'td:nth-child(1) span:nth-child(2)',
+        parse: text => moment(text, 'DD/MM/YYYY').toDate()
+      },
       title: {
-        sel: 'h3 a',
-        attr: 'title'
+        sel: 'td:nth-child(2)',
+        fn: extractText
       },
       amount: {
-        sel: '.price_color',
-        parse: normalizePrice
+        sel: 'td:nth-child(4)',
+        fn: extractText,
+        parse: text => parseFloat(/(\d+,\d+)/g.exec(text)[0])
       },
-      url: {
-        sel: 'h3 a',
-        attr: 'href',
-        parse: url => `${baseUrl}/${url}`
-      },
-      fileurl: {
-        sel: 'img',
-        attr: 'src',
-        parse: src => `${baseUrl}/${src}`
-      },
-      filename: {
-        sel: 'h3 a',
-        attr: 'title',
-        parse: title => `${title}.jpg`
+      numero: {
+        sel: 'td:nth-child(3)',
+        fn: extractText
       }
     },
-    'article'
+    '.achats-ligne'
   )
-  return docs.map(doc => ({
-    ...doc,
-    // the saveBills function needs a date field
-    // even if it is a little artificial here (these are not real bills)
-    date: new Date(),
-    currency: '€',
-    vendor: 'template',
-    metadata: {
-      // it can be interesting that we add the date of import. This is not mandatory but may be
-      // usefull for debugging or data migration
-      importDate: new Date(),
-      // document version, usefull for migration after change of document structure
-      version: 1
-    }
-  }))
+  return Promise.all(
+    docs.map(async doc => ({
+      ...doc,
+      currency: 'EUR',
+      vendor: 'le monde diplomatique',
+      metadata: {
+        importDate: new Date(),
+        version: 1
+      },
+      filename: createFilename(doc),
+      filestream: await generatePDF(doc.numero)
+    }))
+  )
 }
 
-// convert a price string to a float
-function normalizePrice(price) {
-  return parseFloat(price.replace('£', '').trim())
+const createFilename = ({ title, numero, amount }) =>
+  `${title.replace(' ', '-')}-${numero}-${amount}-EUR.pdf`
+
+async function generatePDF(num) {
+  const url = `https://boutique.monde-diplomatique.fr/gsales/order/view/id/${num}`
+  const doc = createCozyPDFDocument(
+    'Généré automatiquement par le connecteur Le Monde Diplomatique depuis la page',
+    url
+  )
+  const $ = await request(url)
+  htmlToPDF($, doc, $('.my-account'), {
+    baseURL: url
+  })
+  doc.end()
+  return doc
+}
+
+/**
+ * @param  {Object} node - a cheerio.js.org node
+ *
+ * @example
+ * // given
+ * // "<span>Some unuseful text</span>
+ * //           The useful text    "
+ * // as the node content, it returns
+ * // "The useful text"
+ *
+ * @returns {string} Returns the second line of the node
+ */
+function extractText(node) {
+  return node
+    .contents()
+    .get(2)
+    .data.trim()
 }

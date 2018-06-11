@@ -5,7 +5,7 @@ env:
   global:
   - GH_USER_EMAIL="travis@example.org"
   - GH_USER_NAME="cozy-bot"
-  - DEPLOY_REPOSITORY="git@github.com:konnectors/cozy-konnector-template.git"
+  - DEPLOY_REPOSITORY="git@github.com:konnectors/mondediplo.git"
   - secure: hVk9GwZ0oURg0TwdDpkF2vISkFtXJn+r8OB4i7bzCwnDmnoUVzIL+6pelZS9jC/R9WNcrnmSpBoJeglSp+1vlxIW09stU/JaRBYoxNbMjc3BtooVCc1vaMXqfjJKnWYhH3Aj75/9mbYWZwQVljYIzcj3/2Kctxxl8B2NvS5oEkaIUyJwqXcUeu8sVNvjHVVzrEqyKo1JDG6fcWvhF6HeSorel/L0sc8jIZe1GCcL+2QFxqNIHKc4tiUqaUMpVgsu80BthVGAdzitOoCQ2h2ul3lMPDhuxzza2hV4pNs5tWWJnmNAWjytdBPr9mK1Pop5vcTD+u5jIMAWkqDJOgP2vjYcGtJat9goSi4pMpI5vgYG+tQd3r1nBbvwqHOctAvIL3c4SrLmZooClTO/rTFefUrUytzu1gaoZlr5afbMpJ/py/kajemgn86VkL5WrDQflsmO72gsiOG7LKRTLmChmHFFe9FU4aHCmJpEyJo0GWaZ+5WGZfj4HcBXplru7Wcqk0griaxaf00B9YwRxbAF3knidtU5LnTcroBMj/pkd58hIj/xGyejeRZZU3i61uzEn086m8Y5+DntVRe3lD44VKBhbv8CuYe0g61TyTfaKtzUM6jDtAcx3YELAn235d24Fax04DesNOHlE6uxf5iz7cTpFXDyM2Yz1tQdKsM2MME=
 cache:
   yarn: true

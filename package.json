@@ -1,10 +1,10 @@
 {
-  "name": "cozy-konnector-template",
-  "version": "1.0.0",
+  "name": "cozy-konnector-mondediplo",
+  "version": "1.0.1",
   "description": "",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/konnectors/cozy-konnector-template.git"
+    "url": "git+https://github.com/konnectors/mondediplo.git"
   },
   "keywords": [],
   "author": "Cozy Cloud",

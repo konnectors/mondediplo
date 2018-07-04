@@ -84,5 +84,6 @@
       }
     }
   },
+  "banksTransactionRegExp": "\\bmonde-diplomatique\\b",
   "manifest_version": "2"
 }

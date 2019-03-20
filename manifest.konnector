@@ -5,7 +5,7 @@
   "language": "node",
   "icon": "icon.jpg",
   "slug": "mondediplo",
-  "source": "git://github.com/konnectors/mondediplo.git",
+  "source": "git@github.com:konnectors/mondediplo.git",
   "editor": "Cozy",
   "vendor_link": "https://www.monde-diplomatique.fr/",
   "categories": [

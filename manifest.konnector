@@ -1,11 +1,11 @@
 {
-  "version": "1.1.1",
+  "version": "1.2.0",
   "name": "Le Monde Diplomatique",
   "type": "konnector",
   "language": "node",
   "icon": "icon.svg",
   "slug": "mondediplo",
-  "source": "git://github.com/konnectors/mondediplo.git",
+  "source": "git@github.com:konnectors/mondediplo.git",
   "editor": "Cozy",
   "vendor_link": "https://www.monde-diplomatique.fr/",
   "categories": [

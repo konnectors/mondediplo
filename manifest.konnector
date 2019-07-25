@@ -3,7 +3,7 @@
   "name": "Le Monde Diplomatique",
   "type": "konnector",
   "language": "node",
-  "icon": "icon.jpg",
+  "icon": "icon.svg",
   "slug": "mondediplo",
   "source": "git://github.com/konnectors/mondediplo.git",
   "editor": "Cozy",

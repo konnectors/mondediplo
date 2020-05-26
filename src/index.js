@@ -7,7 +7,6 @@ const {
   requestFactory,
   signin,
   scrape,
-  saveBills,
   log,
   htmlToPDF,
   createCozyPDFDocument
@@ -27,7 +26,7 @@ module.exports = new BaseKonnector(start)
 
 async function start(fields) {
   log('info', 'Authenticating…')
-  await authenticate(fields.login, fields.password)
+  await authenticate.bind(this)(fields.login, fields.password)
   log('info', 'Successfully logged in')
   log('info', 'Fetching the list of documents')
   const $ = await request(invoicesURL)
@@ -35,8 +34,8 @@ async function start(fields) {
   const documents = await parseDocuments($)
 
   log('info', 'Saving data to Cozy')
-  await saveBills(documents, fields.folderPath, {
-    identifiers: ['monde-diplomatique'],
+  await this.saveBills(documents, fields.folderPath, {
+    identifiers: ['monde diplomatique'],
     contentType: 'application/pdf'
   })
 }
@@ -86,10 +85,6 @@ function parseDocuments($) {
       ...doc,
       currency: 'EUR',
       vendor: 'le monde diplomatique',
-      metadata: {
-        importDate: new Date(),
-        version: 1
-      },
       filename: createFilename(doc),
       filestream: await generatePDF(doc.numero)
     }))

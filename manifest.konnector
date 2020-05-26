@@ -91,6 +91,6 @@
       }
     }
   },
-  "banksTransactionRegExp": "\\bmonde-diplomatique\\b",
+  "banksTransactionRegExp": "\\bmonde[\\-\\s]diplomatique\\b",
   "manifest_version": "2"
 }

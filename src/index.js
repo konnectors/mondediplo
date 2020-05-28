@@ -71,7 +71,13 @@ function parseDocuments($) {
       amount: {
         sel: 'td:nth-child(4)',
         fn: extractText,
-        parse: text => parseFloat(/(\d+,\d+)/g.exec(text)[0])
+        parse: text =>
+          parseFloat(
+            text
+              .replace('€', '')
+              .replace(',', '.')
+              .trim()
+          )
       },
       numero: {
         sel: 'td:nth-child(3)',

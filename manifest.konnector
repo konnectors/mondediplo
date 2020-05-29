@@ -25,6 +25,10 @@
       }
     }
   },
+  "time_interval": [
+    0,
+    24
+  ],
   "data_types": [
     "bill"
   ],
@@ -39,10 +43,7 @@
       "type": "io.cozy.files"
     },
     "accounts": {
-      "type": "io.cozy.accounts",
-      "verbs": [
-        "GET"
-      ]
+      "type": "io.cozy.accounts"
     }
   },
   "developer": {
@@ -91,6 +92,7 @@
       }
     }
   },
+  "features": [ "LOGIN_OK", "METADATA_DEDUP", "HTML_TO_PDF" ],
   "banksTransactionRegExp": "\\bmonde[\\-\\s]diplomatique\\b",
   "manifest_version": "2"
 }

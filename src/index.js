@@ -5,7 +5,6 @@ process.env.SENTRY_DNS =
 const {
   BaseKonnector,
   requestFactory,
-  signin,
   scrape,
   log,
   htmlToPDF,
@@ -25,23 +24,22 @@ const invoicesURL = `${baseUrl}/sales/order/history/`
 module.exports = new BaseKonnector(start)
 
 async function start(fields) {
-  log('info', 'Authenticating…')
   await authenticate.bind(this)(fields.login, fields.password)
-  log('info', 'Successfully logged in')
   log('info', 'Fetching the list of documents')
   const $ = await request(invoicesURL)
   log('info', 'Parsing list of documents')
   const documents = await parseDocuments($)
 
   log('info', 'Saving data to Cozy')
-  await this.saveBills(documents, fields.folderPath, {
+  await this.saveBills(documents, fields, {
     identifiers: ['monde diplomatique'],
-    contentType: 'application/pdf'
+    contentType: true,
+    fileIdAttributes: ['vendorRef']
   })
 }
 
 function authenticate(email, mot_de_passe) {
-  return signin({
+  return this.signin({
     url: `https://www.monde-diplomatique.fr/sso/connexion/?retour=https%3A%2F%2Fboutique.monde-diplomatique.fr%2Fcustomer%2Faccount`,
     formSelector: 'form#identification_sso',
     formData: { email, mot_de_passe },
@@ -79,28 +77,27 @@ function parseDocuments($) {
               .trim()
           )
       },
-      numero: {
+      vendorRef: {
         sel: 'td:nth-child(3)',
         fn: extractText
       }
     },
     '.achats-ligne'
   )
-  return Promise.all(
-    docs.map(async doc => ({
-      ...doc,
-      currency: 'EUR',
-      vendor: 'le monde diplomatique',
-      filename: createFilename(doc),
-      filestream: await generatePDF(doc.numero)
-    }))
-  )
+  return docs.map(doc => ({
+    ...doc,
+    currency: 'EUR',
+    vendor: 'le monde diplomatique',
+    filename: createFilename(doc),
+    fetchFile: generatePDF
+  }))
 }
 
-const createFilename = ({ title, numero, amount }) =>
-  `${title.replace(' ', '-')}-${numero}-${amount}-EUR.pdf`
+const createFilename = ({ title, vendorRef, amount }) =>
+  `${title.replace(' ', '-')}-${vendorRef}-${amount}-EUR.pdf`
 
-async function generatePDF(num) {
+async function generatePDF(entry) {
+  const num = entry.vendorRef
   const url = `https://boutique.monde-diplomatique.fr/gsales/order/view/id/${num}`
   const doc = createCozyPDFDocument(
     'Généré automatiquement par le connecteur Le Monde Diplomatique depuis la page',
